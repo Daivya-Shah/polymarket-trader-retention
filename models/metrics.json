@@ -1,0 +1,36 @@
+{
+  "random_state": 42,
+  "target": "active_m3",
+  "train_size": 150657,
+  "test_size": 52081,
+  "train_positive_rate": 0.3861685816125371,
+  "test_positive_rate": 0.3902190818148653,
+  "test_base_churn_rate": 0.6097809181851347,
+  "winner_pr_auc": "lightgbm_calibrated",
+  "logistic": {
+    "model": "logistic",
+    "roc_auc": 0.5637884798516428,
+    "pr_auc": 0.433205746594323,
+    "brier": 0.25664563233656773,
+    "precision_at_0_5": 0.4173241154941033,
+    "recall_at_0_5": 0.7574177040791221,
+    "f1_at_0_5": 0.5381415186687176,
+    "top_decile_churn_precision": 0.8010752688172043,
+    "base_churn_rate": 0.6097809181851347,
+    "top_decile_lift": 1.313709965214082,
+    "top_decile_n": 5208
+  },
+  "lightgbm_calibrated": {
+    "model": "lightgbm_calibrated",
+    "roc_auc": 0.6621169054959829,
+    "pr_auc": 0.5232671701278626,
+    "brier": 0.21835254831498402,
+    "precision_at_0_5": 0.5405134088627563,
+    "recall_at_0_5": 0.37090980662303796,
+    "f1_at_0_5": 0.43993113309405,
+    "top_decile_churn_precision": 0.9049539170506913,
+    "base_churn_rate": 0.6097809181851347,
+    "top_decile_lift": 1.484064013915141,
+    "top_decile_n": 5208
+  }
+}

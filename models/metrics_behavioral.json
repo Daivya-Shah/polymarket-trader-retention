@@ -1,0 +1,21 @@
+{
+  "random_state": 42,
+  "variant": "behavioral_only",
+  "target": "active_m3",
+  "train_size": 150657,
+  "test_size": 52081,
+  "train_positive_rate": 0.3861685816125371,
+  "test_positive_rate": 0.3902190818148653,
+  "test_base_churn_rate": 0.6097809181851347,
+  "n_features": 13,
+  "lightgbm_calibrated_behavioral": {
+    "model": "lightgbm_calibrated_behavioral",
+    "roc_auc": 0.6680932533698781,
+    "pr_auc": 0.5308706012120198,
+    "brier": 0.21412202970309874,
+    "top_decile_churn_precision": 0.9132104454685099,
+    "base_churn_rate": 0.6097809181851347,
+    "top_decile_lift": 1.4976041693571844,
+    "top_decile_n": 5208
+  }
+}

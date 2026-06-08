@@ -1,0 +1,16 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+data/raw/*
+!data/raw/churn_features.csv
+data/processed/
+outputs/**
+!outputs/figures/
+!outputs/figures/churn_shap_summary.png
+*.egg-info/
+dist/
+build/
+.uv/

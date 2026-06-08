@@ -1,0 +1,28 @@
+[project]
+name = "polymarket-growth"
+version = "0.1.0"
+description = "Polymarket trader retention cohort analysis for growth insights"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "dune-client>=1.7.0",
+    "pandas>=2.0.0",
+    "plotly>=5.18.0",
+    "matplotlib>=3.8.0",
+    "requests>=2.31.0",
+    "python-dotenv>=1.0.0",
+    "python-pptx>=1.0.0",
+    "scikit-learn>=1.4.0",
+    "lightgbm>=4.3.0",
+    "shap>=0.45.0",
+    "joblib>=1.3.0",
+    "streamlit>=1.36.0",
+]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+py-modules = ["config", "data_access", "analysis", "churn_features", "churn_explain"]

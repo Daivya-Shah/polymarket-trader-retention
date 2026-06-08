@@ -1,0 +1,18 @@
+[
+  "n_trades_w1",
+  "active_days_w1",
+  "n_markets_w1",
+  "n_categories_w1",
+  "avg_usd",
+  "max_usd",
+  "total_usd",
+  "extreme_price_share",
+  "median_hour",
+  "hrs_to_2nd",
+  "multi_category_flag",
+  "has_second_trade",
+  "first_category_crypto",
+  "first_category_other",
+  "first_category_politics",
+  "first_category_sports"
+]
