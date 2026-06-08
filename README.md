@@ -1,4 +1,4 @@
-# Polymarket Growth
+# Polymarket Trader Retention
 
 On-chain growth analysis for Polymarket takers: cohort retention by acquisition month and category (Dune), plus a **week-1 churn model** that predicts month-3 retention (`active_m3`) from first-7-day behavior.
 
