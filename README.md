@@ -3,6 +3,8 @@
 [Presentation](https://drive.google.com/file/d/18Q7KuzhSN7wT4w2mJkLEkvF6vc8qwqTt/view?usp=sharing)
 [Final Report](https://drive.google.com/file/d/1Ho1HvbCvC2JqmMP27qa4qp_xZgL6YPVG/view?usp=sharing)
 
+---
+
 On-chain growth analysis for Polymarket takers: cohort retention by acquisition month and category (Dune), plus a **week-1 churn model** that predicts month-3 retention (`active_m3`) from first-7-day behavior.
 
 ## What this repo does
