@@ -1,6 +1,8 @@
 # Polymarket Trader Retention
 
-[Presentation](https://drive.google.com/file/d/18Q7KuzhSN7wT4w2mJkLEkvF6vc8qwqTt/view?usp=sharing) · [Final Report](https://drive.google.com/file/d/1Ho1HvbCvC2JqmMP27qa4qp_xZgL6YPVG/view?usp=sharing)
+[Presentation](https://drive.google.com/file/d/18Q7KuzhSN7wT4w2mJkLEkvF6vc8qwqTt/view?usp=sharing)
+
+[Final Report](https://drive.google.com/file/d/1Ho1HvbCvC2JqmMP27qa4qp_xZgL6YPVG/view?usp=sharing)
 
 On-chain growth analysis for Polymarket takers. We pull cohort retention from Dune, split it by first-trade category, and train a week-1 churn model that predicts month-3 retention.
 
