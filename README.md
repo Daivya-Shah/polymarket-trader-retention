@@ -8,7 +8,7 @@ On-chain growth analysis for Polymarket takers. We pull cohort retention from Du
 
 ## What this is
 
-You have probably seen Polymarket cited return rates around 75%. This repo measures retention from chain data with clear definitions, so you can compare those headlines to what actually shows up on Polygon.
+You have probably seen other sources cite Polymarket trader return rates around 75%. This repo measures retention from chain data with clear definitions, so you can compare those headlines to what actually shows up on Polygon.
 
 There are two main pieces:
 
@@ -161,7 +161,7 @@ python scripts/02_pull_cohort_by_category.py
 
 Writes `data/raw/cohort_retention_by_category.csv`.
 
-## Part 4: Charts and the ~75% benchmark
+## Part 4: Charts and the ~75% cited benchmark
 
 ```bash
 python scripts/03_build_charts.py
