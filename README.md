@@ -11,7 +11,7 @@ On-chain growth analysis for Polymarket takers. We pull cohort retention from Du
 
 ## What this is
 
-Polymarket has talked publicly about high trader return rates (around 75%). This repo measures retention from chain data with explicit definitions, so you can compare apples to apples.
+Some sources cite Polymarket trader return rates as high as ~75%. This repo measures retention from chain data with explicit definitions, so you can test those figures against on-chain behavior.
 
 There are two main pieces:
 
@@ -180,7 +180,7 @@ Writes `data/raw/cohort_retention_by_category.csv`.
 
 ---
 
-## Part 4: Charts and the ~75% claim
+## Part 4: Charts and the ~75% benchmark
 
 ```bash
 python scripts/03_build_charts.py
@@ -188,7 +188,7 @@ python scripts/03_build_charts.py
 
 Needs the Part 2 and Part 3 CSVs. Writes `data/processed/*.csv`, `outputs/figures/*.png`, and `outputs/retention_dashboard.html`.
 
-**Ever-returned** (closer to what headline "return" claims usually mean):
+**Ever-returned** (closer to what some sources mean when they cite ~75% return):
 
 1. Save `sql/03_ever_returned.sql` in Dune. Set `DUNE_EVER_RETURNED_QUERY_ID`.
 2. Pull and rebuild:
@@ -279,7 +279,7 @@ Committed deploy assets: `models/churn_lgbm_behavioral.joblib`, `models/*_behavi
 "Retention" means different things depending on how you count:
 
 - **Sequential:** active in exactly month N after first trade (stricter, cohort-curve style).
-- **Ever returned:** active in at least two calendar months (looser, closer to headline return claims).
+- **Ever returned:** active in at least two calendar months (looser, closer to what some sources report as return rates).
 - **active_m3:** any trade in days 60–120 (what the churn model predicts).
 
 Pick the definition that matches the question you are asking.
