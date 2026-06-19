@@ -1,51 +1,76 @@
 # Polymarket Trader Retention
 
-[Presentation](https://drive.google.com/file/d/18Q7KuzhSN7wT4w2mJkLEkvF6vc8qwqTt/view?usp=sharing)
+On-chain growth analysis for Polymarket takers. We pull cohort retention from Dune, break it down by first-trade category, and train a week-1 churn model that predicts month-3 retention.
 
-[Final Report](https://drive.google.com/file/d/1Ho1HvbCvC2JqmMP27qa4qp_xZgL6YPVG/view?usp=sharing)
+**Links**
+
+- [Presentation](https://drive.google.com/file/d/18Q7KuzhSN7wT4w2mJkLEkvF6vc8qwqTt/view?usp=sharing)
+- [Final Report](https://drive.google.com/file/d/1Ho1HvbCvC2JqmMP27qa4qp_xZgL6YPVG/view?usp=sharing)
 
 ---
 
-On-chain growth analysis for Polymarket takers: cohort retention by acquisition month and category (Dune), plus a **week-1 churn model** that predicts month-3 retention (`active_m3`) from first-7-day behavior.
+## What this is
 
-## What this repo does
+Polymarket has talked publicly about high trader return rates (around 75%). This repo measures retention from chain data with explicit definitions, so you can compare apples to apples.
 
-1. **Retention teardown** (Parts 1-4): pull cohort matrices from Dune, segment by first-trade category, chart mature retention, and benchmark Polymarket's "~75% return" claim against ever-returned vs sequential metrics.
-2. **Churn model** (Part 5): train a behavioral LightGBM on ~200k wallets (`active_m3` label), with SHAP explainability and a Streamlit demo.
-3. **Live demo**: Streamlit Community Cloud app backed by precomputed model artifacts (no Dune API at runtime).
+There are two main pieces:
+
+1. **Retention teardown (Parts 1–4)**  
+   Cohort matrices, category splits, charts, and a look at how "ever returned" compares to stricter sequential retention.
+
+2. **Churn model (Part 5)**  
+   A behavioral LightGBM trained on ~200k wallets. It predicts `active_m3` (any trade between days 60 and 120 after first trade) using only the first seven days of behavior. SHAP explains the scores, and there is a Streamlit demo called **Churn Radar**.
+
+Everything treats a taker wallet as a user. That works well at platform scale, but one person can have multiple wallets, so take individual scores as triage signals, not identity.
+
+---
 
 ## Requirements
 
 - Python **3.11+**
-- [Dune](https://dune.com) API key (for data pulls only; not needed to run the Streamlit app)
-- Optional: [uv](https://docs.astral.sh/uv/) for fast installs
+- A [Dune](https://dune.com) API key (only for pulling fresh data; the Streamlit app does not need it)
+- Optional: [uv](https://docs.astral.sh/uv/) if you prefer it over pip
+
+---
 
 ## Quick start
 
 ```bash
-cd polymarket-growth
+git clone <your-repo-url>
+cd polymarket-trader-retention
+
 python -m venv .venv
-# Windows: .venv\Scripts\activate
-# macOS/Linux: source .venv/bin/activate
+# Windows
+.venv\Scripts\activate
+# macOS / Linux
+source .venv/bin/activate
+
 pip install -e .
 ```
 
 Copy `.env.example` to `.env` and fill in your Dune API key and query IDs (see below).
 
-Verify connectivity:
+Check that everything connects:
 
 ```bash
 python scripts/00_check_access.py
 ```
 
+To run the churn demo without touching Dune:
+
+```bash
+pip install -r requirements.txt
+streamlit run app/streamlit_app.py
+```
+
+Opens at `http://localhost:8501`.
+
+---
+
 ## Project layout
 
 ```
-polymarket-growth/
-  README.md
-  requirements.txt          # Streamlit Cloud / minimal app runtime
-  pyproject.toml
-  .env.example
+polymarket-trader-retention/
   app/
     streamlit_app.py          # Churn Radar demo
   src/
@@ -69,34 +94,36 @@ polymarket-growth/
     08_train_churn_model.py
     09_train_churn_behavioral.py
     10_explain_demo.py
-  models/                     # trained churn artifacts (committed for deploy)
+  models/                     # trained artifacts (committed for deploy)
   data/raw/
     churn_features.csv        # committed (~28 MB) for Streamlit deploy
   outputs/figures/
     churn_shap_summary.png    # committed for Streamlit deploy
 ```
 
-Most other `data/raw/`, `data/processed/`, and `outputs/` paths are gitignored.
+Most other paths under `data/raw/`, `data/processed/`, and `outputs/` are gitignored. You generate them by running the scripts.
+
+---
 
 ## Environment variables
 
 | Variable | Purpose |
 |----------|---------|
 | `DUNE_API_KEY` | Dune Analytics API key |
-| `DUNE_CHECK_QUERY_ID` | Connectivity check query |
+| `DUNE_CHECK_QUERY_ID` | Small connectivity check query |
 | `DUNE_COHORT_QUERY_ID` | `sql/01_cohort_retention.sql` |
 | `DUNE_COHORT_CAT_QUERY_ID` | `sql/02_cohort_retention_by_category.sql` |
 | `DUNE_EVER_RETURNED_QUERY_ID` | `sql/03_ever_returned.sql` |
 | `DUNE_CHURN_FEATURES_QUERY_ID` | `sql/04_churn_features.sql` |
 
-Never commit `.env` (it is gitignored).
+Never commit `.env`. It is gitignored.
 
 ---
 
-## Part 1: Dune setup and connectivity
+## Part 1: Dune setup
 
-1. Create a Dune account and API key: [dune.com/settings/api](https://dune.com/settings/api).
-2. Save a small check query in Dune and set `DUNE_CHECK_QUERY_ID` in `.env`.
+1. Create a Dune account and grab an API key from [dune.com/settings/api](https://dune.com/settings/api).
+2. Save a small check query in Dune and put its ID in `DUNE_CHECK_QUERY_ID`.
 3. Run `python scripts/00_check_access.py`.
 
 Check query SQL (paste into Dune):
@@ -113,13 +140,13 @@ ORDER BY 3 DESC
 LIMIT 20;
 ```
 
-Always filter on `block_time` in production queries against `polymarket_polygon.market_trades`.
+Always filter on `block_time` when querying `polymarket_polygon.market_trades`.
 
 ---
 
 ## Part 2: Cohort retention matrix
 
-1. Paste `sql/01_cohort_retention.sql` into Dune, run on the **small** engine, **Save** (public for API).
+1. Paste `sql/01_cohort_retention.sql` into Dune, run on the **small** engine, and **Save** the query (public if you want API access).
 2. Add `DUNE_COHORT_QUERY_ID` to `.env`.
 3. Pull:
 
@@ -129,18 +156,20 @@ python scripts/01_pull_cohort_retention.py
 
 Writes `data/raw/cohort_retention.csv`.
 
+**Common issues**
+
 | Error | Fix |
 |-------|-----|
-| `403 Forbidden` | Query is unsaved. Open in Dune, click **Save**, use that query_id. |
-| Wrong directory | Run from `polymarket-growth/`, not a parent folder. |
+| `403 Forbidden` | Query is unsaved. Open it in Dune, click **Save**, use that query ID. |
+| Wrong output path | Run from the repo root, not a parent folder. |
 
 ---
 
 ## Part 3: Retention by first-trade category
 
-Category logic in `sql/02_cohort_retention_by_category.sql`: tags from `market_details`, then keyword fallback on market text.
+Category logic lives in `sql/02_cohort_retention_by_category.sql`: tags from `market_details`, then keyword fallback on market text.
 
-1. Save `sql/02` as a public Dune query; set `DUNE_COHORT_CAT_QUERY_ID`.
+1. Save `sql/02` as a public Dune query. Set `DUNE_COHORT_CAT_QUERY_ID`.
 2. Pull:
 
 ```bash
@@ -157,12 +186,12 @@ Writes `data/raw/cohort_retention_by_category.csv`.
 python scripts/03_build_charts.py
 ```
 
-Requires Part 2-3 CSVs. Writes `data/processed/*.csv`, `outputs/figures/*.png`, and `outputs/retention_dashboard.html`.
+Needs the Part 2 and Part 3 CSVs. Writes `data/processed/*.csv`, `outputs/figures/*.png`, and `outputs/retention_dashboard.html`.
 
-**Ever-returned** (apples-to-apples with "~75% return"):
+**Ever-returned** (closer to what headline "return" claims usually mean):
 
-1. Save `sql/03_ever_returned.sql` in Dune; set `DUNE_EVER_RETURNED_QUERY_ID`.
-2. Pull and rebuild charts:
+1. Save `sql/03_ever_returned.sql` in Dune. Set `DUNE_EVER_RETURNED_QUERY_ID`.
+2. Pull and rebuild:
 
 ```bash
 python scripts/05_pull_ever_returned.py
@@ -171,13 +200,13 @@ python scripts/03_build_charts.py
 
 ---
 
-## Part 5: Churn model (month-3 retention from week 1)
+## Part 5: Churn model
 
-Predicts **active_m3**: any on-chain trade in **days 60-120** after first trade, from week-1 behavior only.
+The model predicts **active_m3**: did this wallet trade at all between days 60 and 120 after its first trade? Features come from week 1 only.
 
-### 1. Pull features from Dune
+### Pull features
 
-1. Save `sql/04_churn_features.sql` in Dune (small engine); set `DUNE_CHURN_FEATURES_QUERY_ID`.
+1. Save `sql/04_churn_features.sql` in Dune (small engine). Set `DUNE_CHURN_FEATURES_QUERY_ID`.
 2. Pull:
 
 ```bash
@@ -186,23 +215,23 @@ python scripts/07_pull_churn_features.py
 
 Writes `data/raw/churn_features.csv` (~200k wallets, 12.5% sample).
 
-### 2. Train models
+### Train
 
-Full model (with volume features):
+Full model (includes USD volume features):
 
 ```bash
 python scripts/08_train_churn_model.py
 ```
 
-Behavioral-only robustness variant (no USD features):
+Behavioral-only variant (no dollar features, used in the demo):
 
 ```bash
 python scripts/09_train_churn_behavioral.py
 ```
 
-Artifacts land in `models/` (`churn_lgbm_behavioral.joblib` is the primary demo model).
+Artifacts land in `models/`. The demo uses `churn_lgbm_behavioral.joblib`.
 
-### 3. SHAP demo
+### SHAP demo
 
 ```bash
 python scripts/10_explain_demo.py
@@ -210,30 +239,28 @@ python scripts/10_explain_demo.py
 
 Writes `outputs/figures/churn_shap_summary.png` and prints example wallet explanations.
 
-**Held-out test metrics (behavioral model):** ROC-AUC ~0.67, PR-AUC ~0.53, top-decile churn lift ~1.5x (see `models/metrics_behavioral.json`).
+**Held-out test metrics (behavioral model):** ROC-AUC ~0.67, PR-AUC ~0.53, top-decile churn lift ~1.5×. See `models/metrics_behavioral.json` for the full numbers.
 
 ---
 
-## Live demo: Churn Radar (Streamlit)
+## Churn Radar (Streamlit)
 
-Runs on **precomputed artifacts only** (no Dune API at runtime).
+The app runs on precomputed artifacts. No Dune API key at runtime.
 
-**Local:**
+**Local**
 
 ```bash
 pip install -r requirements.txt
 streamlit run app/streamlit_app.py
 ```
 
-Opens at `http://localhost:8501`.
-
-**Deploy to [Streamlit Community Cloud](https://share.streamlit.io):**
+**Deploy to [Streamlit Community Cloud](https://share.streamlit.io)**
 
 | Setting | Value |
 |---------|--------|
 | Main file | `app/streamlit_app.py` |
 | Requirements | `requirements.txt` (repo root) |
-| Secrets | None required for the demo |
+| Secrets | None required |
 
 Committed deploy assets: `models/churn_lgbm_behavioral.joblib`, `models/*_behavioral.json`, `data/raw/churn_features.csv`, `outputs/figures/churn_shap_summary.png`.
 
@@ -241,6 +268,18 @@ Committed deploy assets: `models/churn_lgbm_behavioral.joblib`, `models/*_behavi
 
 ## Troubleshooting
 
-- **Dune 403 on pull:** saved query must be **public** and match the SQL file in `sql/`.
-- **Streamlit missing modules:** use root `requirements.txt`, not only `pyproject.toml`.
-- **Large CSV push:** `churn_features.csv` is ~28 MB (under GitHub's 100 MB file limit).
+- **Dune 403 on pull:** the saved query must be **public** and match the SQL in `sql/`.
+- **Streamlit import errors:** install from root `requirements.txt`, not only `pyproject.toml`.
+- **Large CSV in git:** `churn_features.csv` is ~28 MB, under GitHub's 100 MB file limit.
+
+---
+
+## A note on metrics
+
+"Retention" means different things depending on how you count:
+
+- **Sequential:** active in exactly month N after first trade (stricter, cohort-curve style).
+- **Ever returned:** active in at least two calendar months (looser, closer to headline return claims).
+- **active_m3:** any trade in days 60–120 (what the churn model predicts).
+
+Pick the definition that matches the question you are asking.
